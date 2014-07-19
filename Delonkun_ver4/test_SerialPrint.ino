@@ -127,6 +127,21 @@ void RIGHT()
   __ardublockDigitalWrite(( _ABVAR_1_M + 3 ), HIGH);
 }
 
+void FORWARD_R()
+{
+  __ardublockDigitalWrite(_ABVAR_1_M, HIGH);
+  __ardublockDigitalWrite(( _ABVAR_1_M + 1 ), LOW);
+  __ardublockDigitalWrite(( _ABVAR_1_M + 2 ), LOW);
+  __ardublockDigitalWrite(( _ABVAR_1_M + 3 ), LOW);
+}
+
+void FORWARD_L()
+{
+  __ardublockDigitalWrite(_ABVAR_1_M, LOW);
+  __ardublockDigitalWrite(( _ABVAR_1_M + 1 ), LOW);
+  __ardublockDigitalWrite(( _ABVAR_1_M + 2 ), HIGH);
+  __ardublockDigitalWrite(( _ABVAR_1_M + 3 ), LOW);
+}
 
 
 
@@ -171,13 +186,28 @@ void execCalibration()
 //
 // mode 追跡
 //
+int trackingDist;
+int trackingDirection;
 
 void initTracking()
 {
+  trackingDist = distMM;
+  trackingDirection = 0;
 }
 
 void execTracking()
 {
+  if (distMM > trackingDist)
+    trackingDirection ^= 1;
+  
+  if (trackingDirection == 0) {
+    LED_ON();
+    FORWARD_R();
+  } else {
+    LED_OFF();
+    FORWARD_L();
+  }
+    
 }
 
 
