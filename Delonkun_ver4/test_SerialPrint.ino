@@ -6,7 +6,7 @@
 #define MODE_FORWARD 4
 #define MODE_LEFT 5
 #define MODE_CALIBRATION 6
-#define MODE_TRACKING 7
+#define MODE_ESCAPE 7
 
 int mode;    //モード
 int distMM;  //距離mm
@@ -184,40 +184,22 @@ void execCalibration()
 
 
 //
-// mode 追跡
+// mode エスケープ
 //
-int trackingDist;
-int trackingDirection;
-int trackingCounter;
 
-void initTracking()
+void initEscape()
 {
-  trackingDist = distMM;
-  trackingDirection = 0;
-  trackingCounter = 0;
 }
 
-void execTracking()
+void execEscape()
 {
-  //少し間を空けないと、距離の差が出ない
-  trackingCounter++;
-//  if ((trackingCounter%10) == 0)
-  {
-    // 前より遠くなったら、反転
-    if (distMM > trackingDist)
-      trackingDirection ^= 1;
-      
-    trackingDist = distMM;
-  }
-  
-  if (trackingDirection == 0) {
+  if (distMM < 100) {
     LED_ON();
-    FORWARD_R();
+    RIGHT();
   } else {
     LED_OFF();
-    FORWARD_L();
+    FORWARD();
   }
-    
 }
 
 
@@ -243,8 +225,8 @@ void initMode(int mode) {
     case MODE_CALIBRATION:
       initCalibration(); 
       break;
-    case MODE_TRACKING:
-      initTracking();
+    case MODE_ESCAPE:
+      initEscape();
       break;
   }
 }
@@ -273,8 +255,8 @@ void execMode(int mode) {
     case MODE_CALIBRATION:
       execCalibration();
       break;
-    case MODE_TRACKING:
-      execTracking();
+    case MODE_ESCAPE:
+      execEscape();
       break;
   }
 }
@@ -315,7 +297,7 @@ void loop()
   
   // モード更新
   mode=getCommand();
-  mode=MODE_TRACKING; //******DEBUG用****
+  ;mode=MODE_TRACKING; //******DEBUG用****
   if (mode != oldMode) { //モードが切り替わったので初期化
     initMode(mode);
     oldMode = mode;
