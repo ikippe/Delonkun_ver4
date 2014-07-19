@@ -69,7 +69,8 @@ void STOP();
 void FORWARD();
 void LEFT();
 
-int mode, tmp;
+int mode;    //モード
+int distMM;  //距離mm
 
 void setup()
 {
@@ -79,6 +80,7 @@ void setup()
   _ABVAR_1_M = 7 ;
 
   mode = MODE_STOP;
+  distMM = 0;
 
   Serial.print("-- START --");
   Serial.println();
@@ -87,51 +89,61 @@ void setup()
 
 void loop()
 {
+  static int oldMode=-1;
+
+  // 距離取得
+  distMM = getSensorMM( 6 , 5 ) ;
+  
   // モード更新
   mode=getCommand();
-/*
-  tmp=getCommand();
-  if (tmp!=0) {
-    mode=tmp;
+  if (mode != oldMode) { //モードが切り替わったので初期化
+    initMode(mode);
+    oldMode = mode;
   }
-//*/
-  // 動作
-  Serial.print(mode);
-  Serial.println();
+
+  // モード処理
+  execMode(mode);
+  
+  delay(10);
+}
+
+
+//
+// モード初期化
+//
+void initMode(int mode) {
+  
+  Serial.print("-- Init mode ");
+  Serial.println(mode);
+  
+  switch (mode) {
+  }
+}
+
+
+//
+// モード処理
+//
+void execMode(int mode) {
   switch (mode) {
     case MODE_RIGHT:
       RIGHT();
-      Serial.print("-- RIGHT");
-      Serial.println();
       break;
     case MODE_BACK:
       BACK();
-      Serial.print("-- BACK");
-      Serial.println();
       break;
     case MODE_STOP:
       STOP();
-      Serial.print("-- STOP");
-      Serial.println();
       break;
     case MODE_FORWARD:
       FORWARD();
-      Serial.print("-- FORWARD");
-      Serial.println();
       break;
     case MODE_LEFT:
       LEFT();
-      Serial.print("-- LEFT");
-      Serial.println();
       break;
   }
-  
-  // センサー結果
-  int d = getSensorMM( 6 , 5 ) ;
-  Serial.println(d);
-  delay(500);
-  
 }
+
 
 void BACK()
 {
