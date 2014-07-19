@@ -159,23 +159,51 @@ int calibrationCounter;
 void initCalibration()
 {
   calibrationSt =0;
+  calibrationCounter = 0;
 }
 
 void execCalibration()
 {
   switch (calibrationSt) {
     case 0: //---- 右回転キャリブレーション
-      calibrationCounter = 0;
-      calibrationSt ++;
-      break;
-    case 1:
-      calibrationCounter ++;
-      if ((calibrationCounter%10) == 0) {
-        Serial.print(calibrationCounter);
-        Serial.print(" ");
-        Serial.println(distMM);
+      calibrationCounter++;
+      RIGHT();
+      LED_ON();
+      if (calibrationCounter >= 100) {
+        calibrationCounter = 0;
+        calibrationSt ++;
       }
       break;
+    case 1:  //---- 左回転キャリブレーション
+      calibrationCounter++;
+      LEFT();
+      LED_OFF();
+      if (calibrationCounter >= 100) {
+        calibrationCounter = 0;
+        calibrationSt ++;
+      }
+      break;
+    case 2:  //---- 前キャリブレーション
+      calibrationCounter++;
+      FORWARD();
+      LED_ON();
+      if (calibrationCounter >= 100) {
+        calibrationCounter = 0;
+        calibrationSt ++;
+      }
+      break;
+    case 3:  //---- 後ろキャリブレーション
+      calibrationCounter++;
+      BACK();
+      LED_OFF();
+      if (calibrationCounter >= 100) {
+        calibrationCounter = 0;
+        calibrationSt ++;
+      }
+      break;
+    default:
+      STOP();
+      
   }
 }
 
@@ -297,7 +325,7 @@ void loop()
   
   // モード更新
   mode=getCommand();
-  ;mode=MODE_TRACKING; //******DEBUG用****
+  //mode=MODE_TRACKING; //******DEBUG用****
   if (mode != oldMode) { //モードが切り替わったので初期化
     initMode(mode);
     oldMode = mode;
