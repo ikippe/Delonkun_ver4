@@ -40,12 +40,36 @@ int getSensorMM(int trigPin, int echoPin)
   return duration;
 }
 
+int getCommand(void)
+{
+  int cmd=0;
+  
+  pinMode(3, INPUT);
+  pinMode(4, INPUT);
+  pinMode(11, INPUT);
+  pinMode(12, INPUT);
+  
+  if (digitalRead(3))  cmd |= 0x01;
+  if (digitalRead(4))  cmd |= 0x02;
+  if (digitalRead(11)) cmd |= 0x04;
+  if (digitalRead(12)) cmd |= 0x08;
+  
+  return cmd;
+}
+
+#define MODE_RIGHT 1
+#define MODE_BACK 2
+#define MODE_STOP 3
+#define MODE_FORWARD 4
+#define MODE_LEFT 5
 
 void RIGHT();
 void BACK();
 void STOP();
 void FORWARD();
 void LEFT();
+
+int mode, tmp;
 
 void setup()
 {
@@ -54,7 +78,7 @@ void setup()
 
   _ABVAR_1_M = 7 ;
 
-  STOP();
+  mode = MODE_STOP;
 
   Serial.print("-- START --");
   Serial.println();
@@ -63,7 +87,46 @@ void setup()
 
 void loop()
 {
-  FORWARD();
+  // モード更新
+  mode=getCommand();
+/*
+  tmp=getCommand();
+  if (tmp!=0) {
+    mode=tmp;
+  }
+//*/
+  // 動作
+  Serial.print(mode);
+  Serial.println();
+  switch (mode) {
+    case MODE_RIGHT:
+      RIGHT();
+      Serial.print("-- RIGHT");
+      Serial.println();
+      break;
+    case MODE_BACK:
+      BACK();
+      Serial.print("-- BACK");
+      Serial.println();
+      break;
+    case MODE_STOP:
+      STOP();
+      Serial.print("-- STOP");
+      Serial.println();
+      break;
+    case MODE_FORWARD:
+      FORWARD();
+      Serial.print("-- FORWARD");
+      Serial.println();
+      break;
+    case MODE_LEFT:
+      LEFT();
+      Serial.print("-- LEFT");
+      Serial.println();
+      break;
+  }
+  
+  // センサー結果
   int d = getSensorMM( 6 , 5 ) ;
   Serial.println(d);
   delay(500);
