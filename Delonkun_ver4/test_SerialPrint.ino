@@ -188,17 +188,27 @@ void execCalibration()
 //
 int trackingDist;
 int trackingDirection;
+int trackingCounter;
 
 void initTracking()
 {
   trackingDist = distMM;
   trackingDirection = 0;
+  trackingCounter = 0;
 }
 
 void execTracking()
 {
-  if (distMM > trackingDist)
-    trackingDirection ^= 1;
+  //少し間を空けないと、距離の差が出ない
+  trackingCounter++;
+//  if ((trackingCounter%10) == 0)
+  {
+    // 前より遠くなったら、反転
+    if (distMM > trackingDist)
+      trackingDirection ^= 1;
+      
+    trackingDist = distMM;
+  }
   
   if (trackingDirection == 0) {
     LED_ON();
@@ -305,6 +315,7 @@ void loop()
   
   // モード更新
   mode=getCommand();
+  mode=MODE_TRACKING; //******DEBUG用****
   if (mode != oldMode) { //モードが切り替わったので初期化
     initMode(mode);
     oldMode = mode;
