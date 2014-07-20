@@ -6,7 +6,7 @@
 #define MODE_FORWARD 4
 #define MODE_LEFT 5
 #define MODE_CALIBRATION 6
-#define MODE_ESCAPE 7
+#define MODE_TRACKING 7
 
 int mode;    //モード
 int distMM;  //距離mm
@@ -159,51 +159,23 @@ int calibrationCounter;
 void initCalibration()
 {
   calibrationSt =0;
-  calibrationCounter = 0;
 }
 
 void execCalibration()
 {
   switch (calibrationSt) {
     case 0: //---- 右回転キャリブレーション
-      calibrationCounter++;
-      RIGHT();
-      LED_ON();
-      if (calibrationCounter >= 100) {
-        calibrationCounter = 0;
-        calibrationSt ++;
+      calibrationCounter = 0;
+      calibrationSt ++;
+      break;
+    case 1:
+      calibrationCounter ++;
+      if ((calibrationCounter%10) == 0) {
+        Serial.print(calibrationCounter);
+        Serial.print(" ");
+        Serial.println(distMM);
       }
       break;
-    case 1:  //---- 左回転キャリブレーション
-      calibrationCounter++;
-      LEFT();
-      LED_OFF();
-      if (calibrationCounter >= 100) {
-        calibrationCounter = 0;
-        calibrationSt ++;
-      }
-      break;
-    case 2:  //---- 前キャリブレーション
-      calibrationCounter++;
-      FORWARD();
-      LED_ON();
-      if (calibrationCounter >= 100) {
-        calibrationCounter = 0;
-        calibrationSt ++;
-      }
-      break;
-    case 3:  //---- 後ろキャリブレーション
-      calibrationCounter++;
-      BACK();
-      LED_OFF();
-      if (calibrationCounter >= 100) {
-        calibrationCounter = 0;
-        calibrationSt ++;
-      }
-      break;
-    default:
-      STOP();
-      
   }
 }
 
@@ -212,22 +184,40 @@ void execCalibration()
 
 
 //
-// mode エスケープ
+// mode 追跡
 //
+int trackingDist;
+int trackingDirection;
+int trackingCounter;
 
-void initEscape()
+void initTracking()
 {
+  trackingDist = distMM;
+  trackingDirection = 0;
+  trackingCounter = 0;
 }
 
-void execEscape()
+void execTracking()
 {
-  if (distMM < 100) {
+  //少し間を空けないと、距離の差が出ない
+  trackingCounter++;
+//  if ((trackingCounter%10) == 0)
+  {
+    // 前より遠くなったら、反転
+    if (distMM > trackingDist)
+      trackingDirection ^= 1;
+      
+    trackingDist = distMM;
+  }
+  
+  if (trackingDirection == 0) {
     LED_ON();
-    RIGHT();
+    FORWARD_R();
   } else {
     LED_OFF();
-    FORWARD();
+    FORWARD_L();
   }
+    
 }
 
 
@@ -253,8 +243,8 @@ void initMode(int mode) {
     case MODE_CALIBRATION:
       initCalibration(); 
       break;
-    case MODE_ESCAPE:
-      initEscape();
+    case MODE_TRACKING:
+      initTracking();
       break;
   }
 }
@@ -283,8 +273,8 @@ void execMode(int mode) {
     case MODE_CALIBRATION:
       execCalibration();
       break;
-    case MODE_ESCAPE:
-      execEscape();
+    case MODE_TRACKING:
+      execTracking();
       break;
   }
 }
@@ -325,7 +315,7 @@ void loop()
   
   // モード更新
   mode=getCommand();
-  //mode=MODE_TRACKING; //******DEBUG用****
+  mode=MODE_TRACKING; //******DEBUG用****
   if (mode != oldMode) { //モードが切り替わったので初期化
     initMode(mode);
     oldMode = mode;
